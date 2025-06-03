@@ -1,4 +1,4 @@
-pipeline {
+tpipeline {
     agent any
 
     environment {
@@ -21,7 +21,7 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
                         'cd /home/${ANSIBLE_USER}/ansible && \\
-                         ansible-playbook -i inventory.ini site.yml --vault-password-file ~/.vault_pass.txt''
+                         ansible-playbook -i inventories/prod.ini ansible-task/site.yml --vault-password-file ~/.vault_pass.txt'
                     """
                 }
             }
@@ -33,7 +33,7 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
                         'cd /home/${ANSIBLE_USER}/ansible && \\
-                         ansible-playbook -i inventory.ini nagios.yml --vaule-password-file ~/.vault_pass.txt'
+                         ansible-playbook -i inventories/prod.ini ansible-task/nagios.yml --vaule-password-file ~/.vault_pass.txt'
                     """
                 }
             }
