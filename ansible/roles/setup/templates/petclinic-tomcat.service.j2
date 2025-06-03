@@ -1,0 +1,17 @@
+
+[Unit]
+Description=Petclinic Tomcat
+After=network.target
+
+[Service]
+Type=forking
+User=pet-clinic
+Group=pet-clinic
+Environment=JAVA_HOME=/home/pet-clinic/java/jdk-{{ java_version }}
+Environment=CATALINA_PID=/home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}/temp/tomcat.pid
+ExecStart=/home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}/bin/startup.sh
+ExecStop=/home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}/bin/shutdown.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

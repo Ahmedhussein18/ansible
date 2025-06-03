@@ -1,0 +1,9 @@
+---
+- name: Daemon-Reload
+  systemd:
+    daemon_reload: yes
+
+- name: Restart Tomcat
+  systemd:
+    name: petclinic-tomcat
+    state: restarted

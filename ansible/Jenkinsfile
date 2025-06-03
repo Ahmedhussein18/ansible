@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    environment {
+        ANSIBLE_HOST = "192.168.100.117"
+        ANSIBLE_USER = "shekshek"
+        SSH_KEY_ID = "jenkins-ssh"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
+            }
+        }
+        
+
+        stage('Run Ansible: Build and Deploy') {
+            steps {
+                sshagent([env.SSH_KEY_ID]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
+                        'cd /home/${ANSIBLE_USER}/ansible && \\
+                         ansible-playbook -i inventory.ini site.yml --vault-password-file ~/.vault_pass.txt''
+                    """
+                }
+            }
+        }
+
+        stage('Run Ansible: Configure Nagios') {
+            steps {
+                sshagent([env.SSH_KEY_ID]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
+                        'cd /home/${ANSIBLE_USER}/ansible && \\
+                         ansible-playbook -i inventory.ini nagios.yml --vaule-password-file ~/.vault_pass.txt'
+                    """
+                }
+            }
+        }
+    }
+}

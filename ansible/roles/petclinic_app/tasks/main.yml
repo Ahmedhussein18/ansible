@@ -1,0 +1,26 @@
+---
+- name: Convert JAR → WAR
+  script: jar-to-war.sh
+  args:
+    chdir: "{{ jenkins_workspace }}"
+
+- name: Copy WAR from Jenkins workspace
+  copy:
+    remote_src: yes
+    src: "{{ jenkins_workspace }}/target/spring-petclinic-3.4.0-SNAPSHOT.war"
+    dest: "{{ tomcat_home }}/webapps/spring-petclinic.war"
+    owner: pet-clinic
+    group: pet-clinic
+    mode: '0644'
+  notify: Restart Tomcat
+
+- name: Wait for port {{ petclinic_port }}
+  wait_for:
+    port: "{{ petclinic_port }}"
+    delay: 3
+    timeout: 30
+
+- name: HTTP health check
+  uri:
+    url: "http://localhost:{{ petclinic_port }}/spring-petclinic/"
+    status_code: 200

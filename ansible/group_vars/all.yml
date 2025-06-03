@@ -1,0 +1,19 @@
+---
+# Component versions
+java_version: "17.0.12"
+tomcat_version: "10.1.41"
+petclinic_port: 9090
+nagios_version: "4.4.6"
+nagios_plugins_version: "2.4.6"
+
+
+# Secrets (store real values in vault_encrypted.yml)
+tomcat_mgr_user: "{{ vault_tomcat_mgr_user }}"
+tomcat_mgr_pass: "{{ vault_tomcat_mgr_pass }}"
+nagios_admin_user: "{{ vault_nagios_admin_user }}"
+nagios_admin_pass: "{{ vault_nagios_admin_pass }}"
+
+# Directories
+jenkins_workspace: "/var/lib/jenkins/workspace/Pet-clinic-cid-cd"
+tomcat_home: "/home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}"
+java_home: "/home/pet-clinic/java/jdk-17.0.12"

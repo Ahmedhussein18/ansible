@@ -1,0 +1,6 @@
+---
+- hosts: petclinic
+  become: true
+  roles:
+    - setup
+    - jenkins

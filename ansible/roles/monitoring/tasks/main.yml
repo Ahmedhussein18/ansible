@@ -1,0 +1,98 @@
+---
+- name: Install dependencies
+  dnf:
+    name:
+      - gcc
+      - glibc
+      - glibc-common
+      - wget
+      - unzip
+      - httpd
+      - php
+      - gd
+      - gd-devel
+      - make
+      - net-snmp
+      - openssl-devel
+      - perl
+      - gettext
+      - autoconf
+      - automake
+      - curl
+    state: present
+
+- name: Create nagios user
+  user:
+    name: nagios
+    shell: /sbin/nologin
+    create_home: no
+
+- name: Add apache to nagios group
+  user:
+    name: apache
+    groups: nagios
+    append: yes
+
+- name: Download Nagios Core
+  get_url:
+    url: "https://github.com/NagiosEnterprises/nagioscore/archive/refs/tags/nagios-{{ nagios_version }}.tar.gz"
+    dest: /tmp/nagios.tar.gz
+
+- name: Extract Nagios Core
+  unarchive:
+    src: /tmp/nagios.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Compile & install Nagios Core
+  shell: |
+    cd /tmp/nagioscore-*
+    ./configure --with-httpd-conf=/etc/httpd/conf.d
+    make all
+    make install
+    make install-init
+    make install-commandmode
+    make install-config
+    make install-webconf
+  args:
+    creates: /usr/local/nagios/bin/nagios
+
+- name: Set Nagios web UI user
+  command: htpasswd -b -c /usr/local/nagios/etc/htpasswd.users {{ nagios_admin_user }} {{ nagios_admin_pass }}
+  args:
+    creates: /usr/local/nagios/etc/htpasswd.users
+
+- name: Enable & start services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - httpd
+    - nagios
+
+- name: Ensure servers directory exists
+  file:
+    path: /usr/local/nagios/etc/servers
+    state: directory
+    mode: '0755'
+
+- name: Configure HTTP check for Tomcat
+  copy:
+    dest: /usr/local/nagios/etc/servers/tomcat_http.cfg
+    mode: '0644'
+    content: |
+      define service{
+          use                 generic-service
+          host_name           localhost
+          service_description Tomcat HTTP
+          check_command       check_http!-p {{ petclinic_port }} -u /spring-petclinic
+          notifications_enabled 1
+      }
+  notify: Restart Nagios
+
+handlers:
+  - name: Restart Nagios
+    service:
+      name: nagios
+      state: restarted

@@ -1,0 +1,35 @@
+---
+- name: Add Jenkins repo
+  get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+    mode: '0644'
+
+- name: Import Jenkins GPG key
+  rpm_key:
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    state: present
+
+- name: Install Jenkins
+  yum:
+    name: jenkins
+    state: present
+
+
+- name: Ensure override directory exists
+  file:
+    path: /etc/systemd/system/jenkins.service.d
+    state: directory
+    mode: '0755'
+
+- name: Set JAVA_HOME for Jenkins service
+  copy:
+    dest: /etc/systemd/system/jenkins.service.d/java.conf
+    mode: '0644'
+    content: |
+      [Service]
+      Environment="JAVA_HOME={{ java_home }}"
+      Environment="PATH={{ java_home }}/bin:/usr/bin:/usr/sbin"
+  notify:
+    - Daemon-Reload
+    - Restart Jenkins

@@ -1,0 +1,58 @@
+---
+- name: Copy install script
+  copy:
+    src: script.sh
+    dest: /home/server/script.sh
+    mode: '0755'
+
+- name: Run install script
+  become: yes
+  command: /home/server/script.sh
+
+# Configure Tomcat manager
+- name: Ensure manager-gui role present
+  become: yes
+  become_user: pet-clinic
+  lineinfile:
+    path: /home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}/conf/tomcat-users.xml
+    line: '<role rolename="manager-gui"/>'
+    state: present
+    insertbefore: '</tomcat-users>'
+
+- name: Ensure manager user present
+  become: yes
+  become_user: pet-clinic
+  lineinfile:
+    path: /home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}/conf/tomcat-users.xml
+    line: '<user username="{{ tomcat_mgr_user }}" password="{{ tomcat_mgr_pass }}" roles="manager-gui"/>'
+    state: present
+    insertafter: '<role rolename="manager-gui"/>'
+  notify:
+    - Restart Tomcat
+
+# Change port
+- name: Change Tomcat port to {{ petclinic_port }}
+  become: yes
+  become_user: pet-clinic
+  replace:
+    path: /home/pet-clinic/tomcat/apache-tomcat-{{ tomcat_version }}/conf/server.xml
+    regexp: 'port="8080"'
+    replace: 'port="{{ petclinic_port }}"'
+  notify:
+    - Restart Tomcat
+
+# Deploy systemd unit
+- name: Deploy systemd unit
+  template:
+    src: petclinic-tomcat.service.j2
+    dest: /etc/systemd/system/petclinic-tomcat.service
+    mode: '0644'
+  notify:
+    - Daemon-Reload
+    - Restart Tomcat
+
+- name: Ensure Tomcat service enabled & started
+  systemd:
+    name: petclinic-tomcat
+    state: started
+    enabled: yes
