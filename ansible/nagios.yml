@@ -1,0 +1,5 @@
+---
+- hosts: petclinic
+  become: true
+  roles:
+    - monitoring
