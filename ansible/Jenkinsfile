@@ -8,24 +8,24 @@ pipeline {
     }
 
      stages {
-    //     stage('Checkout') {
-    //         steps {
-    //             git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
-    //         }
-    //     }
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
+            }
+        }
         
 
-    //     stage('Run Ansible: Build and Deploy') {
-    //         steps {
-    //             sshagent([env.SSH_KEY_ID]) {
-    //                 sh """
-    //                     ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
-    //                     'cd /home/${ANSIBLE_USER}/ansible-task && \\
-    //                      ansible-playbook -i inventories/prod.ini site.yml --vault-password-file vault_pass.txt'
-    //                 """
-    //             }
-    //         }
-    //     }
+        stage('Run Ansible: Build and Deploy') {
+            steps {
+                sshagent([env.SSH_KEY_ID]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
+                        'cd /home/${ANSIBLE_USER}/ansible-task && \\
+                         ansible-playbook -i inventories/prod.ini site.yml --vault-password-file vault_pass.txt'
+                    """
+                }
+            }
+        }
 
         stage('Run Ansible: Configure Nagios') {
             steps {
