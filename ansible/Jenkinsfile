@@ -20,8 +20,8 @@ pipeline {
                 sshagent([env.SSH_KEY_ID]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
-                        'cd /home/${ANSIBLE_USER}/ansible && \\
-                         ansible-playbook -i inventories/prod.ini ansible-task/site.yml --vault-password-file ~/.vault_pass.txt'
+                        'cd /home/${ANSIBLE_USER}/ansible-task && \\
+                         ansible-playbook -i inventories/prod.ini site.yml --vault-password-file ~/.vault_pass.txt'
                     """
                 }
             }
@@ -32,8 +32,8 @@ pipeline {
                 sshagent([env.SSH_KEY_ID]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${ANSIBLE_USER}@${ANSIBLE_HOST} \\
-                        'cd /home/${ANSIBLE_USER}/ansible && \\
-                         ansible-playbook -i inventories/prod.ini ansible-task/nagios.yml --vaule-password-file ~/.vault_pass.txt'
+                        'cd /home/${ANSIBLE_USER}/ansible-task && \\
+                         ansible-playbook -i inventories/prod.ini nagios.yml --vaule-password-file ~/.vault_pass.txt'
                     """
                 }
             }
