@@ -71,25 +71,30 @@
     - httpd
     - nagios
 
-- name: Ensure servers directory exists
-  file:
-    path: /usr/local/nagios/etc/servers
-    state: directory
-    mode: '0755'
-
+- name: Configure HTTP command
+  copy:
+    dest: /usr/local/nagios/etc/objects/commands.cfg
+    content: |
+      define command{
+          command_name    check_http_9090_petclinic
+          command_line    $USER1$/check_http -H $HOSTADDRESS$ -p 9090 -u /spring-petclinic
+        
+        }
+      
+  notify: Restart Nagios
 - name: Configure HTTP check for Tomcat
   copy:
-    dest: /usr/local/nagios/etc/servers/tomcat_http.cfg
-    mode: '0644'
+    dest: /usr/local/nagios/etc/localhost.cfg
     content: |
       define service{
           use                 generic-service
           host_name           localhost
           service_description Tomcat HTTP
-          check_command       check_http!-p {{ petclinic_port }} -u /spring-petclinic
+          check_command       check_http_9090_petclinic
           notifications_enabled 1
       }
   notify: Restart Nagios
+
 
 handlers:
   - name: Restart Nagios
